@@ -48,15 +48,33 @@ def format_json_file(string):
     space_form_result.append(line+"\n")
             
     return ''.join(space_form_result)
+          
+
+class Part_Number:
+    def __init__(self, part_number):
+        pre_format_json = digikey_manuf_search(part_number)
+        formatted_json = format_json_file(pre_format_json)
+
+        part_num_info = json.loads(formatted_json)
+        product_desc = part_num_info["exact_manufacturer_products"][0]["product_description"]
+
+        product_desc_list = product_desc.split() 
+            
+        self.part_type = product_desc_list[0]
+        self.value = ""
+        self.tolerance = ""
+        self.power = ""
+        self.package = ""
+        if self.part_type == 'RES':
+            self.value = product_desc_list[1]
+            self.tolerance = product_desc_list[3]
+            self.power = product_desc_list[4]
+            self.package = product_desc_list[5]
+        
     
-
 print("Enter a Manufacturing P/N")
-x = input()
-pre_format_json = digikey_manuf_search(x)
-formatted_json = format_json_file(pre_format_json)
+p = Part_Number(input())
+print(p.package)
 
-part_num_info = json.loads(formatted_json)
-product_desc = part_num_info["exact_manufacturer_products"][0]["product_description"]
-print(product_desc)
 
 

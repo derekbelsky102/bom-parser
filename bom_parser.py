@@ -11,6 +11,8 @@ from digikey.v3.batchproductdetails import BatchProductDetailsRequest
 def digikey_manuf_search(x):
     CACHE_DIR = 'path/to/cache/dir'
 
+    os.system("mkdir -p path/to/cache/dir")
+
     os.environ['DIGIKEY_CLIENT_ID'] = 'zoMDIPlwJAJ2BDzAP8AfNrYtxzGutIAz'
     os.environ['DIGIKEY_CLIENT_SECRET'] = 'VSNvHwtEA2vUlQPE'
     os.environ['DIGIKEY_CLIENT_SANDBOX'] = 'False'
@@ -54,27 +56,57 @@ class Part_Number:
     def __init__(self, part_number):
         pre_format_json = digikey_manuf_search(part_number)
         formatted_json = format_json_file(pre_format_json)
+        #print(formatted_json)
 
-        part_num_info = json.loads(formatted_json)
-        product_desc = part_num_info["exact_manufacturer_products"][0]["product_description"]
+        try:
+            part_num_info = json.loads(formatted_json)
 
-        product_desc_list = product_desc.split() 
-            
-        self.part_type = product_desc_list[0]
-        self.value = ""
-        self.tolerance = ""
-        self.power = ""
-        self.package = ""
-        if self.part_type == 'RES':
-            self.value = product_desc_list[1]
-            self.tolerance = product_desc_list[3]
-            self.power = product_desc_list[4]
-            self.package = product_desc_list[5]
+            self.part_number = part_number
+            self.description = part_num_info["exact_manufacturer_products"][0]["product_description"]
+            self.manufacturer = part_num_info["exact_manufacturer_products"][0]["manufacturer"]['value']
+            self.part_type = part_num_info["exact_manufacturer_products"][0]["category"]["value"]
+
+            self.value = ""
+            self.tolerance = ""
+            self.power = ""
+            self.package = ""
+            self.voltage_rate = ""
+            self.dieletric = ""
+            self.error = ""
+            self.operating_temp = ""
+
+            parameters =  part_num_info["exact_manufacturer_products"][0]["parameters"]
+            # Grab general parameters
+            for line in parameters:
+                if line["parameter"] == "Operating Temperature":
+                    self.operating_temp = line["value"]
+                if line["parameter"] == "Package / Case":
+                    self.package = line["value"]
+            # Specific Parameters
+            if self.part_type == 'Resistors':
+                for line in parameters:
+                    if line["parameter"] == "Resistance":
+                        self.value = line["value"]
+                    if line["parameter"] == "Tolerance":
+                        self.tolerance = line["value"]
+                    if line["parameter"] == "Power (Watts)":
+                        self.power = line["value"]
+            if self.part_type == 'Capacitors':
+                parameters =  part_num_info["exact_manufacturer_products"][0]["parameters"]
+                for line in parameters:
+                    if line["parameter"] == "Capacitance":
+                        self.value = line["value"]
+                    if line["parameter"] == "Tolerance":
+                        self.tolerance = line["value"]
+                    if line["parameter"] == "Temperature Coefficient":
+                        self.dieletric = line["value"]
+                    if line["parameter"] == "Voltage - Rated":
+                        self.voltage_rate = line["value"]
+        except:
+            self.error = "No Parameters Extracted"
         
     
-print("Enter a Manufacturing P/N")
-p = Part_Number(input())
-print(p.package)
+
 
 
 

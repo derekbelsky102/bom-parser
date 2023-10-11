@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import re
+import platform
 
 import digikey
 from digikey.v3.productinformation import KeywordSearchRequest
@@ -9,9 +10,14 @@ from digikey.v3.batchproductdetails import BatchProductDetailsRequest
 
 # Call Digikey PN and get json string result. 
 def digikey_manuf_search(x):
-    CACHE_DIR = 'path/to/cache/dir'
+    CACHE_DIR = ''
 
-    os.system("mkdir -p path/to/cache/dir")
+    if platform.system() == "Windows":
+        os.system("mkdir path\\to\\cache\\dir")
+        CACHE_DIR = "path/to/cache/dir"
+    if platform.system() == "Linux":
+        os.system("mkdir -p path/to/cache/dir")
+        CACHE_DIR = "path/to/cache/dir"
 
     os.environ['DIGIKEY_CLIENT_ID'] = 'zoMDIPlwJAJ2BDzAP8AfNrYtxzGutIAz'
     os.environ['DIGIKEY_CLIENT_SECRET'] = 'VSNvHwtEA2vUlQPE'
